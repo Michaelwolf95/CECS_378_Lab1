@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace CECS_378_Lab_1_Framework
 {
+    // Check solution against https://quipqiup.com/
     class Program
     {
         // Word Checker from Third-Party NuGet Package with English Dictionary
@@ -23,6 +25,8 @@ namespace CECS_378_Lab_1_Framework
         // Characters we know are substituted.
         public static Dictionary<char, char> substitutionMap;
 
+        //-////////////////////////////////////////////////////////
+        // 
         static void Main(string[] args)
         {
             /// Initialization
@@ -33,27 +37,29 @@ namespace CECS_378_Lab_1_Framework
             wordChecker = new NetSpell.SpellChecker.Spelling();
             wordChecker.Dictionary = wordDict;
 
-            // Init character map
+            // Init character substitution map
             substitutionMap = new Dictionary<char, char>();
 
             /// Get Input
             string input = "fqjcb rwjwj vnjax bnkhj whxcq nawjv nfxdu mbvnu ujbbf nnc";
             Console.WriteLine(input);
 
-            /// Break Up Source Text
+            /// Evaluate Input Text
             // Find char frequency
-            // Find smallest words(?)
+            input = Regex.Replace(input, @"\s+", "");
+            Console.WriteLine(input);
             char[] inputArr = input.ToCharArray();
             char[] inputFreq = GetCharFrequency(inputArr);
+            //string[] inputWords = input.Split(' ');
 
             /// Optimization Techniques.
-            // First, find the most frequent character, and replace 'E'.
-            // Repeat this for a character frequency table.
+            // - Character frequency analysis
+            // - Word pattern analysis?
 
-            // Create Substitution Map.
+            // Create Substitution Map based on frequency
             for (int i = 0; i < inputFreq.Length; i++)
             {
-                if(substitutionMap.ContainsKey(inputFreq[i]))
+                if (substitutionMap.ContainsKey(inputFreq[i]))
                 {
                     substitutionMap[inputFreq[i]] = englishCharFrequency[i];
                 }
@@ -62,47 +68,22 @@ namespace CECS_378_Lab_1_Framework
                     substitutionMap.Add(inputFreq[i], englishCharFrequency[i]);
                 }
             }
-            PrintSubstitutionMap(substitutionMap);
-
+            //PrintSubstitutionMap(substitutionMap);
             var firstSubResults = ApplySubstitutions(inputArr, substitutionMap);
             Console.WriteLine(new string(firstSubResults));
 
+
             /// Brute Force
-            // Just loop through all of them until a word is found.
             // Modify the substitution table until we find a correct word.
-
-            string[] words = input.Split(' ');
-            char[] arr = words[0].ToCharArray();
-
-            arr = ApplySubstitutions(arr, substitutionMap);
-            if (wordChecker.TestWord(new string(arr)))
-            {
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    char c = arr[i];
-                    if(substitutionMap.ContainsKey(c))
-                    {
-                        //substitutionMap[c] ==
-                    }
-                }
-            }
+            // Parse the first ~5 char for an english word each cylce.
 
 
-            //// First check if any words are already correct. We might be able to find correctly mapped characters.
-            //for (int i = 0; i < words.Length; i++)
-            //{
-            //    if (wordChecker.TestWord(words[i]))
-            //    {
-            //        Console.WriteLine(words[i]);
-            //    }
-            //}
-
-            //string sourceWord = words[0];
-            //char[] arr = sourceWord.ToCharArray();
-            //BruteForce(ref arr, 0);
+            //string inputString = "dumbdoorsaredumb";
+            string inputString = "whatsinanamearosebyanyothernamewouldsmellassweet";
+            ParseForSentence(inputString);
 
 
-
+            /// Complete Decryption Process
             // Print Map Results
             PrintSubstitutionMap(substitutionMap);
 
@@ -110,37 +91,14 @@ namespace CECS_378_Lab_1_Framework
             Console.Read();
         }
 
-        ///-////////////////////////////
-        /// Replaces a char with another in an array.
-        public static void ReplaceChar(ref char[] source, char cFrom, char cTo)
-        {
-            for (int i = 0; i < source.Length; i++)
-            {
-                if(source[i]== cFrom)
-                {
-                    source[i] = cTo;
-                }
-            }
-        }
-
-        public static void PrintSubstitutionMap(Dictionary<char, char> map)
-        {
-            Console.WriteLine("\nMAP RESULTS ================");
-            foreach (KeyValuePair<char, char> subPair in map)
-            {
-                Console.WriteLine(subPair.Key + " = " + subPair.Value);
-            }
-            Console.WriteLine("============================");
-        }
-
-        ///-////////////////////////////
-        /// Gets an array of characters from the input ordered by frequency
+        //-////////////////////////////////////////////////////////
+        // Gets an array of characters from the input ordered by frequency
         public static char[] GetCharFrequency(char[] input)
         {
             Dictionary<char, int> charFreq = new Dictionary<char, int>();
             for (int i = 0; i < input.Length; i++)
             {
-                if(input[i] == ' ')
+                if (input[i] == ' ')
                 {
                     continue;
                 }
@@ -159,22 +117,26 @@ namespace CECS_378_Lab_1_Framework
             foreach (KeyValuePair<char, int> pair in ordered)
             {
                 resultFreq[index] = pair.Key;
-                //Console.WriteLine(resultFreq[index]);
                 index++;
             }
             return resultFreq;
         }
-        
 
-        public static bool SubBruteForce(char[] inputWord, Dictionary<char, char> subMap)
+        //-////////////////////////////////////////////////////////
+        // Replaces a char with another in an array.
+        public static void ReplaceChar(ref char[] source, char cFrom, char cTo)
         {
-
-
-            return false;
+            for (int i = 0; i < source.Length; i++)
+            {
+                if(source[i]== cFrom)
+                {
+                    source[i] = cTo;
+                }
+            }
         }
 
-        ///-////////////////////////////
-        /// Applies a substitution to an array of characters.
+        //-////////////////////////////////////////////////////////
+        // Applies a substitution to an array of characters.
         public static char[] ApplySubstitutions(char[] input, Dictionary<char, char> subMap)
         {
             List<char> keys = new List<char>(subMap.Keys);
@@ -186,6 +148,113 @@ namespace CECS_378_Lab_1_Framework
         }
 
 
+        //-////////////////////////////////////////////////////////
+        //
+        public static bool SubBruteForce(char[] inputWord, Dictionary<char, char> subMap)
+        {
+
+
+            return false;
+        }
+
+        //-////////////////////////////////////////////////////////
+        // Trys to find an english word while 
+        public static char[] TryFindWord(ref char[] sourceArr, int startIndex=0, int sizeLimit=5, int sizeMin=2)
+        {
+            char[] testWord;
+            int size = Math.Max(1, sizeMin);
+            while(size <= sizeLimit)
+            {
+                int s = size;// Math.Min(size, Math.Min(sourceArr.Length - startIndex, 0));
+                //Console.WriteLine((s).ToString());
+                if (s > 0)
+                {
+                    testWord = new char[s];
+                    for (int i = 0; i < s; i++)
+                    {
+                        //Console.WriteLine((startIndex + i).ToString());
+                        testWord[i] = sourceArr[startIndex + i];
+                    }
+                    Console.WriteLine("Testing:\t" + new string(testWord));
+                    if (testWord.Length == 1 && !(testWord[0] == 'a' || testWord[0] == 'A'))
+                    {
+                        // Single character word that isn't 'a'.
+                    }
+                    else if (wordChecker.TestWord(new string(testWord)))
+                    {
+                        Console.WriteLine("FOUND WORD:\t" + new string(testWord));
+                        
+                        //ToDo: output the found word?
+                        return testWord; 
+                    }
+                }
+                size++;
+            }
+            return new char[]{ };
+        }
+
+        //-////////////////////////////////////////////////////////
+        // Finds a valid English sentence in the input string.
+        private static bool ParseForSentence(string inputString)
+        {
+            Console.WriteLine("INPUT:\t" + inputString);
+            char[] inputArr = inputString.ToCharArray();
+            int foundCharCount = 0;
+            int minSize = 1;
+            List<char[]> foundWords = new List<char[]>();
+            while (foundCharCount < inputString.Length)
+            {
+                int startIndex = Math.Max(foundCharCount, 0);
+                int maxSize = inputString.Length - foundCharCount;
+                Console.WriteLine(startIndex + ", " + maxSize + ", " + minSize);
+                char[] foundWord = TryFindWord(ref inputArr, startIndex, maxSize, minSize);
+                if (foundWord.Length > 0)
+                {
+                    foundWords.Add(foundWord);
+                    minSize = 1; // Note: This might cause a bad loop, and could get us stuck with 3 or more backtracks. Need to manage var better.
+                    Console.WriteLine(new string(foundWord));
+                }
+                else if (foundWords.Count >= 1)
+                {
+                    Console.WriteLine("Couldnt find word. Backtracking...");
+                    minSize = foundWords[foundWords.Count - 1].Length + 1;
+                    foundWords.RemoveAt(foundWords.Count - 1);
+                }
+                else
+                {
+                    Console.WriteLine("Couldnt find ANY words!");
+                    return false;
+                }
+
+                foundCharCount = 0;
+                for (int i = 0; i < foundWords.Count; i++)
+                {
+                    foundCharCount += foundWords[i].Length;
+                }
+            }
+            Console.WriteLine();
+            foreach (var word in foundWords)
+            {
+                Console.Write(new string(word) + " ");
+            }
+            Console.WriteLine();
+            return true;
+        }
+
+        //-////////////////////////////////////////////////////////
+        //
+        public static void PrintSubstitutionMap(Dictionary<char, char> map)
+        {
+            Console.WriteLine("\nMAP RESULTS ================");
+            foreach (KeyValuePair<char, char> subPair in map)
+            {
+                Console.WriteLine(subPair.Key + " = " + subPair.Value);
+            }
+            Console.WriteLine("============================");
+        }
+
+
+        #region Unused
 
         public static bool BruteForce(ref char[] word, int charIndex = 0)
         {
@@ -211,9 +280,10 @@ namespace CECS_378_Lab_1_Framework
                 }
 
             }
-
             return false;
         }
+
+        #endregion
     }
 }
 
@@ -231,3 +301,47 @@ namespace CECS_378_Lab_1_Framework
 //    }
 
 //}
+
+/*
+    // Check if any words are already correct. 
+    // We might be able to quickly find correctly mapped characters.
+    for (int i = 0; i < inputWords.Length; i++)
+    {
+        if (wordChecker.TestWord(inputWords[i]))
+        {
+            Console.WriteLine("ALREADY CORRECT: " + inputWords[i]);
+        }
+    }
+
+    //string[] words = input.Split(' ');
+    //char[] arr = inputWords[0].ToCharArray();
+
+    //arr = ApplySubstitutions(arr, substitutionMap);
+    //if (wordChecker.TestWord(new string(arr)))
+    //{
+    //    for (int i = 0; i < arr.Length; i++)
+    //    {
+    //        char c = arr[i];
+    //        if(substitutionMap.ContainsKey(c))
+    //        {
+    //            //substitutionMap[c] ==
+    //        }
+    //    }
+    //}
+
+
+    //// First check if any words are already correct. We might be able to find correctly mapped characters.
+    //for (int i = 0; i < words.Length; i++)
+    //{
+    //    if (wordChecker.TestWord(words[i]))
+    //    {
+    //        Console.WriteLine(words[i]);
+    //    }
+    //}
+
+    //string sourceWord = words[0];
+    //char[] arr = sourceWord.ToCharArray();
+    //BruteForce(ref arr, 0);
+
+
+*/
