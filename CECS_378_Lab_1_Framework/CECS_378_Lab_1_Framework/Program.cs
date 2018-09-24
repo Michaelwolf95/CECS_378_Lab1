@@ -52,7 +52,7 @@ namespace CECS_378_Lab_1_Framework
             char[] inputFreq = GetCharFrequency(inputArr);
             //string[] inputWords = input.Split(' ');
 
-            /// Optimization Techniques.
+            /// Optimization Techniques
             // - Character frequency analysis
             // - Word pattern analysis?
 
@@ -74,13 +74,13 @@ namespace CECS_378_Lab_1_Framework
 
 
             /// Brute Force
-            // Modify the substitution table until we find a correct word.
-            // Parse the first ~5 char for an english word each cylce.
+            // Modify the substitution table until we find a table that renders a correct sentence.
+            // Parse the first ~5 char for an english word each cycle.
 
 
             //string inputString = "dumbdoorsaredumb";
             string inputString = "whatsinanamearosebyanyothernamewouldsmellassweet";
-            ParseForSentence(inputString);
+            ParseEnglishSentence(inputString);
 
 
             /// Complete Decryption Process
@@ -150,7 +150,7 @@ namespace CECS_378_Lab_1_Framework
 
         //-////////////////////////////////////////////////////////
         //
-        public static bool SubBruteForce(char[] inputWord, Dictionary<char, char> subMap)
+        public static bool BruteForceSubstitution(char[] inputWord, Dictionary<char, char> subMap)
         {
 
 
@@ -184,7 +184,6 @@ namespace CECS_378_Lab_1_Framework
                     {
                         Console.WriteLine("FOUND WORD:\t" + new string(testWord));
                         
-                        //ToDo: output the found word?
                         return testWord; 
                     }
                 }
@@ -195,7 +194,7 @@ namespace CECS_378_Lab_1_Framework
 
         //-////////////////////////////////////////////////////////
         // Finds a valid English sentence in the input string.
-        private static bool ParseForSentence(string inputString)
+        private static bool ParseEnglishSentence(string inputString)
         {
             Console.WriteLine("INPUT:\t" + inputString);
             char[] inputArr = inputString.ToCharArray();
@@ -211,8 +210,9 @@ namespace CECS_378_Lab_1_Framework
                 if (foundWord.Length > 0)
                 {
                     foundWords.Add(foundWord);
-                    minSize = 1; // Note: This might cause a bad loop, and could get us stuck with 3 or more backtracks. Need to manage var better.
-                    Console.WriteLine(new string(foundWord));
+                    minSize = 1; // Reset the minSize to 1. Finishes the backtracking cycle.
+                    // Note: This might cause a bad loop, and could get us stuck with 3 or more backtracks. Need to manage the variable better.
+                    Console.WriteLine("Added:\t"+ new string(foundWord));
                 }
                 else if (foundWords.Count >= 1)
                 {
@@ -222,6 +222,8 @@ namespace CECS_378_Lab_1_Framework
                 }
                 else
                 {
+                    // Note: One typo can "destroy" the whole sentence due to backtracking methods. 
+                    // There needs to be a limit on backtracking, and we should capture "typo" words.
                     Console.WriteLine("Couldnt find ANY words!");
                     return false;
                 }
