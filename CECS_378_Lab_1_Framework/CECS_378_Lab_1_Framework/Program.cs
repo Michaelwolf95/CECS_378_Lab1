@@ -21,9 +21,24 @@ namespace CECS_378_Lab_1_Framework
                 'l', 'u', 'c', 'm', 'f',
                 'y', 'w', 'g', 'p', 'b',
                 'v', 'k', 'x', 'q', 'j', 'z' };
+        // Alphabet in order
+        public static char[] englishAlphabet =
+            {   'a', 'b', 'c', 'd', 'e',
+                'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o',
+                'p', 'q', 'r', 's', 't',
+                'u', 'v', 'w', 'x', 'y', 'z' };
 
         // Characters we know are substituted.
         public static Dictionary<char, char> substitutionMap;
+
+        public static string[] inputStrings =
+        {
+            "fqjcb rwjwj vnjax bnkhj whxcq nawjv nfxdu mbvnu ujbbf nnc",
+            "oczmz vmzor jocdi bnojv dhvod igdaz admno ojbzo rcvot jprvi oviyv aozmo cvooj ziejt dojig toczr dnzno jahvi fdiyv xcdzq zoczn zxjiy",
+            "ejitp spawa qleji taiul rtwll rflrl laoat wsqqj atgac kthls iraoa twlpl qjatw jufrh lhuts qataq itats aittk stqfj cae",
+            "iyhqz ewqin azqej shayz niqbe aheum hnmnj jaqii yuexq ayqkn jbeuq iihed yzhni ifnun sayiz yudhe sqshu qesqa iluym qkque aqaqm oejjs hqzyu jdzqa diesh niznj jayzy uiqhq vayzq shsnj jejjz nshna hnmyt isnae sqfun dqzew qiead zevqi zhnjq shqze udqai jrmtq uishq ifnun siiqa suoij qqfni syyle iszhn bhmei squih nimnx hsead shqmr udquq uaqeu iisqe jshnj oihyy snaxs hqihe lsilu ymhni tyz"
+        };
 
         //-////////////////////////////////////////////////////////
         // 
@@ -37,24 +52,107 @@ namespace CECS_378_Lab_1_Framework
             wordChecker = new NetSpell.SpellChecker.Spelling();
             wordChecker.Dictionary = wordDict;
 
-            // Init character substitution map
+
+            char[] str = "abc".ToCharArray();
+            GetPer(str, (char[] result)=> {
+                Console.WriteLine(result);
+                if (result == "cba".ToCharArray())
+                    return true;
+                return false;
+            });
+            return;
+
+            //string input = "fqjcb rwjwj vnjax bnkhj whxcq nawjv nfxdu mbvnu ujbbf nnc";
+            //string input = "fqjcbrwjwjvnjaxbnkhjwhxcqnawjvnfxdumbvnuujbbfnnc";
+            string input = inputStrings[2];
+            Console.WriteLine("==============================");
+            Console.WriteLine(input);
+            bool success = Decrypt(input);
+
+            
+
+            /// Complete Decryption Process
+            // Print Map Results
+            PrintSubstitutionMap(substitutionMap);
+
+
+            // Finished. Keep Console Open.
+            Console.Read();
+        }
+
+        public static bool Decrypt(string input)
+        {
+            bool success = false;
+            // Clean Input of whitespaces
+            //input = Regex.Replace(input, @"\s+", "");
+            input = new string(input.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
+            // Check if phrase is already decrypted
+            success = ParseEnglishSentence(input);
+
+            // Check Shift cipher
+            if (!success)
+            {
+                Console.WriteLine("ATTEMPTING SHIFT CIPHER DECRYPT");
+                success = DecryptShiftCipher(input);
+            }
+            // Check Substitution cipher
+            if(!success)
+            {
+                Console.WriteLine("ATTEMPTING SUBSTITUTION CIPHER DECRYPT");
+                success = DecryptSubstitutionCipher(input);
+            }
+
+            return success;
+        }
+
+        public static bool DecryptShiftCipher(string input)
+        {
+            bool success = false;
+
+            Console.WriteLine(input);
+            // Init character substitution map (cypher char, mapped to char for decrypt)
             substitutionMap = new Dictionary<char, char>();
 
-            /// Get Input
-            string input = "fqjcb rwjwj vnjax bnkhj whxcq nawjv nfxdu mbvnu ujbbf nnc";
+            char[] inputChars = input.ToCharArray();
+            // 1. Create sub map
+            // 2. Check against input
+            // 3. Shift sub map, and check again
+            for (int i = 0; i < 26; i++)
+            {
+                ShiftSubMap(ref substitutionMap, englishAlphabet, i);
+                //PrintSubstitutionMap(substitutionMap);
+                char[] testChars = ApplySubstitutionMap(inputChars, substitutionMap);
+                if (ParseEnglishSentence(new string(testChars)))
+                {
+                    Console.WriteLine("SUCESS!");
+                    success = true;
+                    break;
+                }
+            }
+            Console.WriteLine("DONE");
+
+            return success;
+        }
+
+        public static bool DecryptSubstitutionCipher(string input)
+        {
+            bool success = false;
+
             Console.WriteLine(input);
+            // Init character substitution map (cypher char, mapped to char for decrypt)
+            substitutionMap = new Dictionary<char, char>();
+            for (int i = 0; i < englishAlphabet.Length; i++)
+            {
+                substitutionMap.Add(englishAlphabet[i], englishAlphabet[i]);
+            }
 
             /// Evaluate Input Text
             // Find char frequency
-            input = Regex.Replace(input, @"\s+", "");
-            Console.WriteLine(input);
-            char[] inputArr = input.ToCharArray();
-            char[] inputFreq = GetCharFrequency(inputArr);
-            //string[] inputWords = input.Split(' ');
+            char[] inputChars = input.ToCharArray();
+            char[] inputFreq = GetCharFrequency(inputChars);
 
-            /// Optimization Techniques
-            // - Character frequency analysis
-            // - Word pattern analysis?
+            // ToDo: Word pattern analysis
 
             // Create Substitution Map based on frequency
             for (int i = 0; i < inputFreq.Length; i++)
@@ -62,33 +160,57 @@ namespace CECS_378_Lab_1_Framework
                 if (substitutionMap.ContainsKey(inputFreq[i]))
                 {
                     substitutionMap[inputFreq[i]] = englishCharFrequency[i];
+                    //substitutionMap[englishCharFrequency[i]] = inputFreq[i];
                 }
                 else
                 {
                     substitutionMap.Add(inputFreq[i], englishCharFrequency[i]);
+                    //substitutionMap.Add(englishCharFrequency[i], inputFreq[i]);
                 }
             }
             //PrintSubstitutionMap(substitutionMap);
-            var firstSubResults = ApplySubstitutions(inputArr, substitutionMap);
+            //char[] firstSubResults = ApplySubstitutions(inputArr, substitutionMap);
+            char[] firstSubResults = ApplySubstitutionMap(inputChars, substitutionMap);
             Console.WriteLine(new string(firstSubResults));
 
+
+            // 1. Create sub map
+            // 2. Check against input
+            // 3. Shift sub map, and check again
+            for (int i = 0; i < 26; i++)
+            {
+                //ShiftSubMap(ref substitutionMap, englishAlphabet, i);
+
+
+                //PrintSubstitutionMap(substitutionMap);
+                char[] testChars = ApplySubstitutionMap(inputChars, substitutionMap);
+                if (ParseEnglishSentence(new string(testChars)))
+                {
+                    Console.WriteLine("SUCESS!");
+                    success = true;
+                    break;
+                }
+            }
 
             /// Brute Force
             // Modify the substitution table until we find a table that renders a correct sentence.
             // Parse the first ~5 char for an english word each cycle.
 
 
-            //string inputString = "dumbdoorsaredumb";
-            string inputString = "whatsinanamearosebyanyothernamewouldsmellassweet";
-            ParseEnglishSentence(inputString);
+            //string inputString = "whatsinanamearosebyanyothernamewouldsmellassweet";
+            //ParseEnglishSentence(inputString);
+
+            return success;
+        }
 
 
-            /// Complete Decryption Process
-            // Print Map Results
-            PrintSubstitutionMap(substitutionMap);
+        public bool BruteForceDecrypt(char[] source, out char[] str, Dictionary<char, char> subMap)
+        {
+            str = source;
 
-            // Finished. Keep Console Open.
-            Console.Read();
+
+
+            return false;
         }
 
         //-////////////////////////////////////////////////////////
@@ -136,17 +258,53 @@ namespace CECS_378_Lab_1_Framework
         }
 
         //-////////////////////////////////////////////////////////
-        // Applies a substitution to an array of characters.
+        // Applies a substitution to an array of characters. 
         public static char[] ApplySubstitutions(char[] input, Dictionary<char, char> subMap)
         {
+            // BROKEN
             List<char> keys = new List<char>(subMap.Keys);
             for (int i = 0; i < keys.Count; i++)
             {
+                Console.WriteLine(new string(input));
                 ReplaceChar(ref input, keys[i], subMap[keys[i]]);
+                //ReplaceChar(ref input, subMap[keys[i]], keys[i]);
             }
             return input;
         }
 
+        public static char[] ApplySubstitutionMap(char[] input, Dictionary<char, char> subMap)
+        {
+            char[] ret = new char[input.Length];
+            for (int i = 0; i < ret.Length; i++)
+            {
+                ret[i] = '_';
+            }
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                //Console.WriteLine(new string(ret));
+                ret[i] = subMap[input[i]];
+            }
+
+            return ret;
+        }
+
+        public static void ShiftSubMap(ref Dictionary<char, char> subMap, char[] alphabet, int shiftAmount)
+        {
+            for (int i = 0; i < alphabet.Length; i++)
+            {
+                int newInt= (i + shiftAmount) % 26;
+                char newChar = alphabet[newInt];
+                if(subMap.ContainsKey(alphabet[i]))
+                {
+                    subMap[alphabet[i]] = newChar;
+                }
+                else
+                {
+                    subMap.Add(alphabet[i], newChar);
+                }
+            }
+        }
 
         //-////////////////////////////////////////////////////////
         //
@@ -255,6 +413,42 @@ namespace CECS_378_Lab_1_Framework
             Console.WriteLine("============================");
         }
 
+        /// PERMUTATIONS ====================================
+        private static void Swap(ref char a, ref char b)
+        {
+            if (a == b) return;
+
+            a ^= b;
+            b ^= a;
+            a ^= b;
+        }
+
+        public static bool GetPer(char[] list, Func<char[], bool> func = null)
+        {
+            int x = list.Length - 1;
+            return GetPer(list, 0, x, func);
+        }
+
+        private static bool GetPer(char[] list, int k, int m, Func<char[], bool> func = null)
+        {
+            bool success = false;
+            if (k == m)
+            {
+                if(func != null)
+                {
+                    success = func(list);
+                }
+            }
+            else
+                for (int i = k; i <= m; i++)
+                {
+                    Swap(ref list[k], ref list[i]);
+                    success = GetPer(list, k + 1, m, func);
+                    Swap(ref list[k], ref list[i]);
+                }
+            return success;
+        }
+        /// ==================================================
 
         #region Unused
 
