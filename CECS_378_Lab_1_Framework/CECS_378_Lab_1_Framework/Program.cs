@@ -44,6 +44,19 @@ namespace CECS_378_Lab_1_Framework
         // 
         static void Main(string[] args)
         {
+            //char[] arr = { 'a', 'b', 'c' };
+            //GetPer2(arr, (char[] result) =>
+            //{
+            //    Console.WriteLine(result);
+            //    if(new string(result) == "bca")
+            //    {
+            //        Console.WriteLine("Found it!");
+            //        return true;
+            //    }
+            //    return false;
+            //});
+            //return;
+
             /// Initialization
             // Init Word Checker
             wordDict = new NetSpell.SpellChecker.Dictionary.WordDictionary();
@@ -52,30 +65,17 @@ namespace CECS_378_Lab_1_Framework
             wordChecker = new NetSpell.SpellChecker.Spelling();
             wordChecker.Dictionary = wordDict;
 
-
-            char[] str = "abc".ToCharArray();
-            GetPer(str, (char[] result)=> {
-                Console.WriteLine(result);
-                if (result == "cba".ToCharArray())
-                    return true;
-                return false;
-            });
-            return;
-
             //string input = "fqjcb rwjwj vnjax bnkhj whxcq nawjv nfxdu mbvnu ujbbf nnc";
             //string input = "fqjcbrwjwjvnjaxbnkhjwhxcqnawjvnfxdumbvnuujbbfnnc";
             string input = inputStrings[2];
             Console.WriteLine("==============================");
             Console.WriteLine(input);
-            bool success = Decrypt(input);
 
-            
+            bool success = Decrypt(input);
 
             /// Complete Decryption Process
             // Print Map Results
             PrintSubstitutionMap(substitutionMap);
-
-
             // Finished. Keep Console Open.
             Console.Read();
         }
@@ -88,13 +88,14 @@ namespace CECS_378_Lab_1_Framework
             input = new string(input.Where(c => !char.IsWhiteSpace(c)).ToArray());
 
             // Check if phrase is already decrypted
-            success = ParseEnglishSentence(input);
+            //success = ParseEnglishSentence(input);
 
             // Check Shift cipher
             if (!success)
             {
                 Console.WriteLine("ATTEMPTING SHIFT CIPHER DECRYPT");
-                success = DecryptShiftCipher(input);
+                //success = DecryptShiftCipher(input);
+                //PrintSubstitutionMap(substitutionMap);
             }
             // Check Substitution cipher
             if(!success)
@@ -141,11 +142,11 @@ namespace CECS_378_Lab_1_Framework
 
             Console.WriteLine(input);
             // Init character substitution map (cypher char, mapped to char for decrypt)
-            substitutionMap = new Dictionary<char, char>();
-            for (int i = 0; i < englishAlphabet.Length; i++)
-            {
-                substitutionMap.Add(englishAlphabet[i], englishAlphabet[i]);
-            }
+            //substitutionMap = new Dictionary<char, char>();
+            //for (int i = 0; i < englishAlphabet.Length; i++)
+            //{
+            //    //substitutionMap.Add(englishAlphabet[i], englishAlphabet[i]);
+            //}
 
             /// Evaluate Input Text
             // Find char frequency
@@ -153,38 +154,93 @@ namespace CECS_378_Lab_1_Framework
             char[] inputFreq = GetCharFrequency(inputChars);
 
             // ToDo: Word pattern analysis
-
+            // Sub = (CIPHER, ENGLISH)
+            substitutionMap = new Dictionary<char, char>();
+            //List<char> charsToMap = new List<char>(englishAlphabet);
+            List<char> charsToMap = new List<char>(englishCharFrequency);
             // Create Substitution Map based on frequency
             for (int i = 0; i < inputFreq.Length; i++)
+            //for (int i = 0; i < englishCharFrequency.Length; i++)
             {
-                if (substitutionMap.ContainsKey(inputFreq[i]))
+                //if (substitutionMap.ContainsKey(inputFreq[i]))
+                if (substitutionMap.ContainsKey(englishCharFrequency[i]))
                 {
-                    substitutionMap[inputFreq[i]] = englishCharFrequency[i];
-                    //substitutionMap[englishCharFrequency[i]] = inputFreq[i];
+                    //substitutionMap[inputFreq[i]] = englishCharFrequency[i];
+                    substitutionMap[englishCharFrequency[i]] = inputFreq[i];
                 }
                 else
                 {
-                    substitutionMap.Add(inputFreq[i], englishCharFrequency[i]);
-                    //substitutionMap.Add(englishCharFrequency[i], inputFreq[i]);
+                    //substitutionMap.Add(inputFreq[i], englishCharFrequency[i]);
+                    substitutionMap.Add(englishCharFrequency[i], inputFreq[i]);
+                    //charsToMap.Remove(englishCharFrequency[i]);
+                    charsToMap.Remove(englishCharFrequency[i]);
                 }
             }
+            PrintSubstitutionMap(substitutionMap);
+            Queue<char> charsToMapQueue = new Queue<char>(charsToMap.ToArray());
+            //for (int i = 0; i < englishAlphabet.Length; i++)
+            //{
+            //    if(substitutionMap.ContainsKey(englishAlphabet[i]) == false)
+            //    {
+            //        //substitutionMap.Add(englishAlphabet[i], charsToMapQueue.Dequeue());
+            //        //substitutionMap.Add(charsToMapQueue.Dequeue(), englishAlphabet[i]);
+            //    }
+            //}
+            for (int i = 0; i < englishCharFrequency.Length; i++)
+            {
+                if (substitutionMap.ContainsKey(englishCharFrequency[i]) == false)
+                {
+                    //substitutionMap.Add(englishAlphabet[i], charsToMapQueue.Dequeue());
+                    //substitutionMap.Add(charsToMapQueue.Dequeue(), englishAlphabet[i]);
+                    substitutionMap.Add(englishCharFrequency[i], '_');
+                }
+            }
+            Console.WriteLine(charsToMapQueue.ToArray());
+            PrintSubstitutionMap(substitutionMap);
+            //return false;
+
             //PrintSubstitutionMap(substitutionMap);
             //char[] firstSubResults = ApplySubstitutions(inputArr, substitutionMap);
-            char[] firstSubResults = ApplySubstitutionMap(inputChars, substitutionMap);
-            Console.WriteLine(new string(firstSubResults));
+            //char[] firstSubResults = ApplySubstitutionMap(inputChars, substitutionMap);
+            //Console.WriteLine(new string(firstSubResults));
 
+            char[] keys = substitutionMap.Keys.ToArray();
+            char[] values = substitutionMap.Values.ToArray();
 
-            // 1. Create sub map
-            // 2. Check against input
-            // 3. Shift sub map, and check again
-            for (int i = 0; i < 26; i++)
+            List<char[]> allMapPermutations = new List<char[]>();
+            GetPer2(values, (char[] result) =>
+            {
+                Console.WriteLine("Permutation:\t" + new string(result));
+                allMapPermutations.Add(result);
+
+                //for (int k = 0; k < keys.Length; k++)
+                //{
+                //    substitutionMap[keys[k]] = result[k];
+                //}
+
+                //PrintSubstitutionMap(substitutionMap);
+                char[] testChars = ApplySubstitutionMap(inputChars, keys, result);
+                if (ParseEnglishSentence(testChars))
+                {
+                    Console.WriteLine("SUCESS!");
+                    success = true;
+                    return true;
+                }
+                return false;
+            });
+
+            return false;
+            for (int i = 0; i < allMapPermutations.Count; i++)
             {
                 //ShiftSubMap(ref substitutionMap, englishAlphabet, i);
-
+                for (int k = 0; k < keys.Length; k++)
+                {
+                    substitutionMap[keys[k]] = allMapPermutations[i][k];
+                }
 
                 //PrintSubstitutionMap(substitutionMap);
                 char[] testChars = ApplySubstitutionMap(inputChars, substitutionMap);
-                if (ParseEnglishSentence(new string(testChars)))
+                if (ParseEnglishSentence(testChars))
                 {
                     Console.WriteLine("SUCESS!");
                     success = true;
@@ -202,7 +258,6 @@ namespace CECS_378_Lab_1_Framework
 
             return success;
         }
-
 
         public bool BruteForceDecrypt(char[] source, out char[] str, Dictionary<char, char> subMap)
         {
@@ -288,6 +343,19 @@ namespace CECS_378_Lab_1_Framework
 
             return ret;
         }
+        public static char[] ApplySubstitutionMap(char[] input, char[] plaintext, char[] ciphertext)
+        {
+            Dictionary<char, char> subMap = new Dictionary<char, char>();
+            for (int i = 0; i < ciphertext.Length; i++)
+            {
+                if(ciphertext[i] != '_')
+                {
+                    //Console.WriteLine(ciphertext[i]);
+                    subMap.Add(ciphertext[i], plaintext[i]);
+                }
+            }
+            return ApplySubstitutionMap(input, subMap);
+        }
 
         public static void ShiftSubMap(ref Dictionary<char, char> subMap, char[] alphabet, int shiftAmount)
         {
@@ -333,14 +401,14 @@ namespace CECS_378_Lab_1_Framework
                         //Console.WriteLine((startIndex + i).ToString());
                         testWord[i] = sourceArr[startIndex + i];
                     }
-                    Console.WriteLine("Testing:\t" + new string(testWord));
+                    //Console.WriteLine("Testing:\t" + new string(testWord));
                     if (testWord.Length == 1 && !(testWord[0] == 'a' || testWord[0] == 'A'))
                     {
                         // Single character word that isn't 'a'.
                     }
                     else if (wordChecker.TestWord(new string(testWord)))
                     {
-                        Console.WriteLine("FOUND WORD:\t" + new string(testWord));
+                        //Console.WriteLine("FOUND WORD:\t" + new string(testWord));
                         
                         return testWord; 
                     }
@@ -354,27 +422,30 @@ namespace CECS_378_Lab_1_Framework
         // Finds a valid English sentence in the input string.
         private static bool ParseEnglishSentence(string inputString)
         {
-            Console.WriteLine("INPUT:\t" + inputString);
-            char[] inputArr = inputString.ToCharArray();
+            return ParseEnglishSentence(inputString.ToCharArray());
+        }
+        private static bool ParseEnglishSentence(char[] inputArr)
+        {
+            //Console.WriteLine("INPUT:\t" + inputString);
             int foundCharCount = 0;
             int minSize = 1;
             List<char[]> foundWords = new List<char[]>();
-            while (foundCharCount < inputString.Length)
+            while (foundCharCount < inputArr.Length)
             {
                 int startIndex = Math.Max(foundCharCount, 0);
-                int maxSize = inputString.Length - foundCharCount;
-                Console.WriteLine(startIndex + ", " + maxSize + ", " + minSize);
+                int maxSize = inputArr.Length - foundCharCount;
+                //Console.WriteLine(startIndex + ", " + maxSize + ", " + minSize);
                 char[] foundWord = TryFindWord(ref inputArr, startIndex, maxSize, minSize);
                 if (foundWord.Length > 0)
                 {
                     foundWords.Add(foundWord);
                     minSize = 1; // Reset the minSize to 1. Finishes the backtracking cycle.
                     // Note: This might cause a bad loop, and could get us stuck with 3 or more backtracks. Need to manage the variable better.
-                    Console.WriteLine("Added:\t"+ new string(foundWord));
+                    //Console.WriteLine("Added:\t"+ new string(foundWord));
                 }
                 else if (foundWords.Count >= 1)
                 {
-                    Console.WriteLine("Couldnt find word. Backtracking...");
+                    //Console.WriteLine("Couldnt find word. Backtracking...");
                     minSize = foundWords[foundWords.Count - 1].Length + 1;
                     foundWords.RemoveAt(foundWords.Count - 1);
                 }
@@ -382,7 +453,7 @@ namespace CECS_378_Lab_1_Framework
                 {
                     // Note: One typo can "destroy" the whole sentence due to backtracking methods. 
                     // There needs to be a limit on backtracking, and we should capture "typo" words.
-                    Console.WriteLine("Couldnt find ANY words!");
+                    //Console.WriteLine("Couldnt find ANY words!");
                     return false;
                 }
 
@@ -423,32 +494,128 @@ namespace CECS_378_Lab_1_Framework
             a ^= b;
         }
 
+        public static bool GetPer2(char[] list, Func<char[], bool> func = null)
+        {
+            int x = list.Length - 1;
+            //return GetPer2(list, x, x, func);
+            return GetPer2(list, 0, x, func);
+        }
+        private static bool GetPer2(char[] list, int depth, int arrayEnd, Func<char[], bool> func = null)
+        {
+            bool success = false;
+            //Swap(ref list[depth], ref list[depth]);
+            //Console.WriteLine(list);
+            if (func != null)
+            {
+                success = func(list);
+                if (success)
+                {
+                    return true;
+                }
+            }
+            //if (depth >= 0)
+            //{
+            //    for (int i = depth - 1; i > 0; i--)
+            //    {
+            //        Swap(ref list[depth], ref list[i]);
+            //        if (list[depth] != list[i])
+            //        {
+            //            success = GetPer2(list, depth - 1, 0, func);
+            //            if (success)
+            //            {
+            //                return true;
+            //            }
+            //        }
+            //        Swap(ref list[depth], ref list[i]);
+            //    }
+            //}
+
+            //if (depth > 0)
+            //{
+            //    for (int i = depth - 1; i < arrayEnd; i++)
+            //    {
+            //        //if (list[depth] != list[i])
+            //        {
+            //            Swap(ref list[depth], ref list[i]);
+            //            success = GetPer2(list, depth - 1, arrayEnd, func);
+            //            if (success)
+            //            {
+            //                return true;
+            //            }
+            //        }
+            //        //Swap(ref list[depth], ref list[i]);
+            //    }
+            //}
+
+            //if (depth > 0)
+            //{
+            //    for (int i = depth; i < arrayEnd; i++)
+            //    {
+            //        if (list[depth] != list[i])
+            //        {
+            //            Swap(ref list[depth], ref list[i]);
+            //            success = GetPer2(list, depth - 1, arrayEnd, func);
+            //            if (success)
+            //            {
+            //                return true;
+            //            }
+            //        }
+            //        //Swap(ref list[depth], ref list[i]);
+            //    }
+            //}
+
+            //if (depth != arrayEnd)
+            if (depth < arrayEnd)
+            {
+                for (int i = depth + 1; i <= arrayEnd; i++)
+                {
+                    if (list[depth] != list[i])
+                    {
+                        Swap(ref list[depth], ref list[i]);
+                        success = GetPer2(list, depth + 1, arrayEnd, func);
+                        if (success)
+                        {
+                            return true;
+                        }
+                        Swap(ref list[depth], ref list[i]);
+                    }
+                }
+            }
+
+            return success;
+        }
+
         public static bool GetPer(char[] list, Func<char[], bool> func = null)
         {
             int x = list.Length - 1;
             return GetPer(list, 0, x, func);
         }
 
-        private static bool GetPer(char[] list, int k, int m, Func<char[], bool> func = null)
+        private static bool GetPer(char[] list, int depth, int arrayEnd, Func<char[], bool> func = null)
         {
             bool success = false;
-            if (k == m)
+            if (depth == arrayEnd)
             {
-                if(func != null)
+                if (func != null)
                 {
                     success = func(list);
                 }
             }
             else
-                for (int i = k; i <= m; i++)
+            {
+                for (int i = depth; i <= arrayEnd; i++)
                 {
-                    Swap(ref list[k], ref list[i]);
-                    success = GetPer(list, k + 1, m, func);
-                    Swap(ref list[k], ref list[i]);
+                    Swap(ref list[depth], ref list[i]);
+                    success = GetPer(list, depth + 1, arrayEnd, func);
+                    if (success)
+                    {
+                        return true;
+                    }
+                    Swap(ref list[depth], ref list[i]);
                 }
+            }
             return success;
         }
-        /// ==================================================
 
         #region Unused
 
